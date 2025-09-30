@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 interface NavList {
@@ -21,7 +21,12 @@ interface NavList {
         </div>
       </div>
       <div class="flex justify-between  px-3">
-        <div class="py-3.5 flex-shrink-0">
+        <div class="py-3.5 flex-shrink-0 flex items-center gap-4">
+          <i
+            class="fa-solid fa-bars fa-xl md:hidden"
+            style="color: #626262;"
+            (click)="toggleMenu()"
+          ></i>
           <a routerLink="/"
             ><img src="/home-shop-logo.png" width="160" height="38" alt="home-shop-logo"
           /></a>
@@ -117,10 +122,60 @@ interface NavList {
         </form>
       </div>
     </header>
+
+    <div
+      class="fixed inset-0 bg-black bg-opacity-50 z-40"
+      [class]="isMenuOpen() ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+      (click)="toggleMenu()"
+    ></div>
+    <div
+      class="fixed top-0 left-0 h-full bg-white z-50 overflow-y-auto transition-transform duration-500 ease-in-out"
+      [class]="isMenuOpen() ? 'translate-x-0' : '-translate-x-full'"
+    >
+      <div class="px-3 py-6">
+        <form class="flex items-center gap-2" [formGroup]="form" (submit)="submit()">
+          <input
+            type="text"
+            placeholder="請輸入商品名稱..."
+            class="outline-none border-2 p-1 pr-0 w-full"
+            formControlName="searchControl"
+          />
+          <button type="submit" class="bg-sidenav-bg-color p-2 border-2">
+            <span>GO</span>
+          </button>
+        </form>
+        <div class="mt-5">
+          <ul class="text-base">
+            @for (item of navItem; track item.id; let i = $index) {
+              <li class="relative group cursor-pointer border-b flex">
+                <a
+                  [routerLink]="item.link"
+                  [class]="
+                    item.title === '企業採購'
+                      ? 'flex gap-1 py-2.5 text-sidenav-text-hover'
+                      : 'flex gap-1 py-2.5 hover:text-sidenav-text-hover'
+                  "
+                >
+                  <span>{{ item.title }}</span>
+                  <span
+                    ><i class="fa-solid fa-chevron-down fa-xs" style="color:currentColor;"></i
+                  ></span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
   `,
   styles: ``,
 })
 export class Header {
+  isMenuOpen = signal(false);
+  toggleMenu() {
+    this.isMenuOpen.update((value) => !value);
+  }
+
   fb = inject(NonNullableFormBuilder);
   form = this.fb.group({
     searchControl: this.fb.control('', {
