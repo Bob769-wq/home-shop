@@ -7,6 +7,7 @@ module.exports = {
         'media-screen-90rem': '1440px',
         'media-screen-75rem': '1200px',
         'media-screen-62rem': '992px',
+        //這邊用px才work用rem他會從最小的開始
       },
       colors: {
         'grandson-hover': '#efefef',
