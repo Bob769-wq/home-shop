@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CardContent } from '../card-content/card-content';
 interface Products {
   id: number;
   img: string;
@@ -10,7 +11,7 @@ interface Products {
 }
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink],
+  imports: [RouterLink, CardContent],
   template: `
     <div class="text-center text-base my-16">
       <p class="mb-2.5">小宅私物推薦適合作為禮品的好物，提供您做選擇！</p>
@@ -20,28 +21,7 @@ interface Products {
     </div>
     <div class="grid md:grid-cols-3 gap-x-2 gap-y-6">
       @for (item of productCard; track item.id) {
-        <div class="flex flex-col">
-          <div class="aspect-square">
-            <a [routerLink]="item.link"
-              ><img [src]="item.img" [alt]="item.title" class="w-full h-full"
-            /></a>
-          </div>
-          <div class="p-2.5">
-            <div class="min-h-10 line-clamp-2 mb-4 text-center">
-              <a [routerLink]="item.link">
-                <h3 class="text-base font-bold text-sidenav-text">{{ item.title }}</h3>
-              </a>
-            </div>
-            @if (item.price2 && item.price2.length > 0) {
-              <div class="flex gap-2 justify-center text-base font-bold">
-                <span class="line-through">{{ item.price1 }}</span>
-                <span class="text-price2">{{ item.price2 }}</span>
-              </div>
-            } @else {
-              <div class="text-center font-bold text-base">{{ item.price1 }}</div>
-            }
-          </div>
-        </div>
+        <app-card-content [product]="item"/>
       }
     </div>
     <div class="flex justify-center items-center mt-7">
