@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgClass } from '@angular/common';
 interface NavList {
   id: number;
   title: string;
@@ -9,9 +10,9 @@ interface NavList {
 }
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, NgClass],
   template: `
-    <header>
+    <header class="">
       <div class="bg-header-bar py-1.5">
         <div class="px-4">
           <p class="text-white">
@@ -20,7 +21,7 @@ interface NavList {
           </p>
         </div>
       </div>
-      <div class="flex justify-between  px-3">
+      <div class="flex justify-between px-3">
         <div class="py-3.5 flex-shrink-0 flex items-center gap-4">
           <i
             class="fa-solid fa-bars fa-xl md:hidden"
@@ -124,6 +125,99 @@ interface NavList {
     </header>
 
     <div
+      class="fixed top-0 left-0 right-0 z-[10000] shadow-lg bg-white transition-transform duration-300"
+      [ngClass]="{
+        '-translate-y-full': !isScrolled(),
+        'translate-y-0': isScrolled(),
+      }"
+    >
+      <div class="flex justify-between px-3">
+        <div class="py-3.5 flex-shrink-0 flex items-center gap-4">
+          <i
+            class="fa-solid fa-bars fa-xl md:hidden"
+            style="color: #626262;"
+            (click)="toggleMenu()"
+          ></i>
+          <a routerLink="/"
+            ><img src="/home-shop-logo.png" width="160" height="38" alt="home-shop-logo"
+          /></a>
+        </div>
+        <div class="text-nav-font-color">
+          <ul class="flex text-base">
+            @for (item of navItem; track item.id; let i = $index) {
+              <li class="relative group cursor-pointer hidden md:flex">
+                <a
+                  [routerLink]="item.link"
+                  [class]="
+                    item.title === '企業採購'
+                      ? 'flex gap-1 p-6 text-sidenav-text-hover'
+                      : 'flex gap-1 p-6 hover:text-sidenav-text-hover'
+                  "
+                >
+                  <span>{{ item.title }}</span>
+                  <span
+                    ><i class="fa-solid fa-chevron-down fa-xs" style="color:currentColor;"></i
+                  ></span>
+                </a>
+                @if (item.children && item.children.length > 0) {
+                  <div
+                    class="absolute top-full bg-white z-[100] invisible group-hover:visible w-max"
+                    [class]="i >= navItem.length - 3 ? 'right-0' : 'left-0'"
+                  >
+                    @if (item.id === 8) {
+                      <div>
+                        @for (child of item.children; track child.id) {
+                          <ul class="">
+                            <li class="px-6 mb-5 cursor-pointer hover:bg-grandson-hover">
+                              <a [routerLink]="child.link">{{ child.title }}</a>
+                            </li>
+                          </ul>
+                        }
+                      </div>
+                    } @else {
+                      <div class="grid grid-cols-3">
+                        @for (child of item.children; track child.id) {
+                          <ul>
+                            <li class="px-4 mb-5 font-bold cursor-pointer">{{ child.title }}</li>
+                            @for (grandson of child.children; track grandson.id) {
+                              <li class="px-4 mb-5 cursor-pointer hover:bg-grandson-hover">
+                                <a [routerLink]="grandson.link">{{ grandson.title }}</a>
+                              </li>
+                            }
+                          </ul>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </li>
+            }
+            <li>
+              <a class="inline-block p-6" routerLink="/"
+                ><i class="fa-solid fa-user fa-lg" style="color: #626262;"></i
+              ></a>
+            </li>
+            <li class="relative group">
+              <a class="inline-block p-6" routerLink="/"
+                ><i class="fa-solid fa-cart-shopping fa-lg" style="color: #626262;"></i
+              ></a>
+              <div
+                class="absolute top-3 left-9 rounded-full bg-white border w-6 h-6 flex justify-center items-center"
+              >
+                <span>0</span>
+              </div>
+              <div
+                class="absolute right-0 top-full w-96 h-24 bg-white z-[100] invisible group-hover:visible shadow-md"
+              >
+                <p class="p-3">購物車內沒有任何商品。</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div
       class="fixed inset-0 bg-black bg-opacity-50 z-40"
       [class]="isMenuOpen() ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       (click)="toggleMenu()"
@@ -174,6 +268,12 @@ export class Header {
   isMenuOpen = signal(false);
   toggleMenu() {
     this.isMenuOpen.update((value) => !value);
+  }
+
+  isScrolled = signal(false);
+  @HostListener('window:scroll')
+  onScroll() {
+    this.isScrolled.set(window.scrollY > 158);
   }
 
   fb = inject(NonNullableFormBuilder);
